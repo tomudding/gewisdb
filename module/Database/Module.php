@@ -60,6 +60,7 @@ class Module
             'invokables' => array(
                 'database_service_meeting' => 'Database\Service\Meeting',
                 'database_service_member' => 'Database\Service\Member',
+                'database_service_donor' => 'Database\Service\Donor',
                 'database_service_event' => 'Database\Service\Event',
                 'database_service_query' => 'Database\Service\Query',
                 'database_service_installationfunction' => 'Database\Service\InstallationFunction',
@@ -114,6 +115,10 @@ class Module
                 'database_form_membertype' => function ($sm) {
                     $form = new \Database\Form\MemberType();
                     $form->setHydrator($sm->get('database_hydrator_member'));
+                    return $form;
+                },
+                'database_form_donor' => function ($sm) {
+                    $form = new \Database\Form\Donor();
                     return $form;
                 },
                 'database_form_createmeeting' => function ($sm) {
@@ -324,6 +329,11 @@ class Module
                 },
                 'database_mapper_prospective_member' => function ($sm) {
                     return new \Database\Mapper\ProspectiveMember(
+                        $sm->get('database_doctrine_em')
+                    );
+                },
+                'database_mapper_donor' => function ($sm) {
+                    return new \Database\Mapper\Donor(
                         $sm->get('database_doctrine_em')
                     );
                 },

@@ -384,6 +384,50 @@ return array(
                     ),
                 ),
             ),
+            'donor' => array(
+                'type'    => 'Literal',
+                'options' => array(
+                    'route'    => '/donor',
+                    'defaults' => array(
+                        '__NAMESPACE__' => 'Database\Controller',
+                        'controller'    => 'Donor',
+                        'action'        => 'index',
+                    ),
+                ),
+                'may_terminate' => true,
+                'child_routes' => array(
+                    'search' => array(
+                        'type' => 'Literal',
+                        'options' => array(
+                            'route' => '/search',
+                            'defaults' => array(
+                                'action' => 'search'
+                            )
+                        )
+                    ),
+                    'show' => array(
+                        'type' => 'Segment',
+                        'options' => array(
+                            'route' => '/show/:id',
+                            'constraints' => array(
+                                'id' => '[0-9]+'
+                            ),
+                            'defaults' => array(
+                                'action' => 'show'
+                            )
+                        )
+                    ),
+                    'register' => array(
+                        'type' => 'Literal',
+                        'options' => array(
+                            'route' => '/register',
+                            'defaults' => array(
+                                'action' => 'register'
+                            )
+                        )
+                    ),
+                ),
+            ),
             'export' => array(
                 'type'    => 'Literal',
                 'options' => array(
@@ -490,6 +534,7 @@ return array(
             'Database\Controller\Settings' => 'Database\Controller\SettingsController',
             'Database\Controller\Address' => 'Database\Controller\AddressController',
             'Database\Controller\Index' => 'Database\Controller\IndexController',
+            'Database\Controller\Donor' => 'Database\Controller\DonorController',
         )
     ),
     'view_manager' => array(
