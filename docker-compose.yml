@@ -40,6 +40,7 @@ services:
 #            - DOCTRINE_REPORT_PASSWORD=
 #            - DOCTRINE_REPORT_DATABASE=
         depends_on:
+            - memcached
             - postfix
         volumes:
             - gewisdb_data:/code/data:rw
@@ -47,6 +48,11 @@ services:
         networks:
             - gewisdb_network
         restart: unless-stopped
+    memcached:
+        image: memcached:1.6-alpine
+        entrypoint:
+            - memcached
+            - -m 64
     postfix:
         image: juanluisbaptiste/postfix
         env_file:

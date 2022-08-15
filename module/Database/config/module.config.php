@@ -471,6 +471,15 @@ return [
                 ],
                 'may_terminate' => true,
                 'child_routes' => [
+                    'enrolment' => [
+                        'type' => Literal::class,
+                        'options' => [
+                            'route' => '/enrolment',
+                            'defaults' => [
+                                'action' => 'enrolment',
+                            ],
+                        ],
+                    ],
                     'list-delete' => [
                         'type' => Segment::class,
                         'options' => [

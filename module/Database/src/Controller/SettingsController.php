@@ -2,6 +2,9 @@
 
 namespace Database\Controller;
 
+use Database\Form\EnrolmentSettings as EnrolmentSettingsForm;
+use Database\Mapper\Setting as SettingMapper;
+use Database\Model\Enums\SettingTypes;
 use Database\Service\{
     InstallationFunction as InstallationFunctionService,
     MailingList as MailingListService,
@@ -13,6 +16,8 @@ use Laminas\View\Model\ViewModel;
 class SettingsController extends AbstractActionController
 {
     public function __construct(
+        private readonly EnrolmentSettingsForm $enrolmentSettingsForm,
+        private readonly SettingMapper $settingMapper,
         private readonly InstallationFunctionService $installationFunctionService,
         private readonly MailingListService $mailingListService,
     ) {
@@ -80,6 +85,27 @@ class SettingsController extends AbstractActionController
         return new ViewModel([
             'form' => $this->mailingListService->getDeleteListForm(),
             'name' => $name,
+        ]);
+    }
+
+    public function enrolmentAction(): ViewModel
+    {
+        $form = $this->enrolmentSettingsForm;
+
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $form->setData($request->getPost()->toArray());
+
+            if ($form->isValid()) {
+                var_dump($form->getData());
+            }
+        }
+
+        $form->get(SettingTypes::RequireIban->value)
+            ->setChecked((int) $this->settingMapper->find(SettingTypes::RequireIban)?->getValue() ?: false);
+
+        return new ViewModel([
+            'form' => $form,
         ]);
     }
 }

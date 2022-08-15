@@ -12,6 +12,7 @@ use Database\Form\{
     DeleteDecision as DeleteDecisionForm,
     DeleteList as DeleteListForm,
     Destroy as DestroyForm,
+    EnrolmentSettings as EnrolmentSettingsForm,
     Export as ExportForm,
     Foundation as FoundationForm,
     Install as InstallForm,
@@ -66,6 +67,7 @@ use Database\Mapper\Factory\{
     OrganFactory as OrganMapperFactory,
     ProspectiveMemberFactory as ProspectiveMemberMapperFactory,
     SavedQueryFactory as SavedQueryMapperFactory,
+    SettingFactory as SettingMapperFactory,
 };
 use Database\Mapper\{
     InstallationFunction as InstallationFunctionMapper,
@@ -75,6 +77,7 @@ use Database\Mapper\{
     Organ as OrganMapper,
     ProspectiveMember as ProspectiveMemberMapper,
     SavedQuery as SavedQueryMapper,
+    Setting as SettingMapper,
 };
 use Database\Model\{
     Address as AddressModel,
@@ -103,6 +106,11 @@ use Database\Service\{
 };
 use Doctrine\Laminas\Hydrator\DoctrineObject;
 use Doctrine\ORM\Events;
+use Laminas\Cache\Psr\CacheItemPool\CacheItemPoolDecorator;
+use Laminas\Cache\Storage\Adapter\{
+    Memcached,
+    MemcachedOptions,
+};
 use Laminas\Hydrator\ObjectPropertyHydrator;
 use Laminas\Mvc\I18n\Translator as MvcTranslator;
 use Laminas\Mvc\MvcEvent;
@@ -111,6 +119,7 @@ use Report\Listener\{
     DatabaseDeletionListener,
     DatabaseUpdateListener,
 };
+use RuntimeException;
 use stdClass;
 
 class Module
@@ -163,6 +172,7 @@ class Module
                 AddressExportForm::class => AddressExportForm::class,
                 DeleteAddressForm::class => DeleteAddressForm::class,
                 DeleteListForm::class => DeleteListForm::class,
+                EnrolmentSettingsForm::class => EnrolmentSettingsForm::class,
                 MemberExpirationForm::class => MemberExpirationForm::class,
                 QueryForm::class => QueryForm::class,
                 QueryExportForm::class => QueryExportForm::class,
@@ -426,6 +436,7 @@ class Module
                 OrganMapper::class => OrganMapperFactory::class,
                 ProspectiveMemberMapper::class => ProspectiveMemberMapperFactory::class,
                 SavedQueryMapper::class => SavedQueryMapperFactory::class,
+                SettingMapper::class => SettingMapperFactory::class,
                 'database_mail_transport' => function (ContainerInterface $container) {
                     $config = $container->get('config');
                     $config = $config['email'];
@@ -440,6 +451,19 @@ class Module
                 'database_doctrine_em' => function (ContainerInterface $container) {
                     return $container->get('doctrine.entitymanager.orm_default');
                 },
+                'database_doctrine_cache' => function () {
+                    $cache = new Memcached();
+                    $options = $cache->getOptions();
+
+                    if (!($options instanceof MemcachedOptions)) {
+                        throw new RuntimeException('Unable to retrieve and set options for Memcached');
+                    }
+
+                    // TTL
+                    $options->setServers(['memcached', '11211']);
+
+                    return new CacheItemPoolDecorator($cache);
+                }
             ],
             'shared' => [
                 // every form should get a different meeting fieldset

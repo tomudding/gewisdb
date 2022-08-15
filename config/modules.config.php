@@ -13,6 +13,7 @@ return [
     'Laminas\Serializer',
     'Laminas\Mail',
     'Laminas\Cache',
+    'Laminas\Cache\Storage\Adapter\Memcached',
     'Laminas\InputFilter',
     'Laminas\Paginator',
     'Laminas\Hydrator',
