@@ -9,6 +9,7 @@ use Doctrine\DBAL\Driver\Middleware as MiddlewareInterface;
 use RuntimeException;
 
 use function getenv;
+use function implode;
 
 class SetRoleMiddleware implements MiddlewareInterface
 {
@@ -22,11 +23,31 @@ class SetRoleMiddleware implements MiddlewareInterface
             throw new RuntimeException('Expected DBAL Driver to be PDO PgSQL, but got ' . $driver::class);
         }
 
-        $role = getenv('DOCTRINE_ROLE');
-        if (false === $role) {
-            throw new RuntimeException('Required DOCTRINE_ROLE not set...');
+        $roleDefault = getenv('DOCTRINE_DEFAULT_ROLE');
+        if (false === $roleDefault) {
+            throw new RuntimeException('Required `DOCTRINE_DEFAULT_ROLE` not set...');
         }
 
-        return new Driver($driver, $role, $isPgSQL);
+        $roleReport = getenv('DOCTRINE_REPORT_ROLE');
+        if (false === $roleReport) {
+            throw new RuntimeException('Required `DOCTRINE_REPORT_ROLE` not set...');
+        }
+
+        $roles = [
+            implode(':', [
+                getenv('DOCTRINE_DEFAULT_HOST'),
+                getenv('DOCTRINE_DEFAULT_PORT'),
+                getenv('DOCTRINE_DEFAULT_DATABASE'),
+            ])
+                => $roleDefault,
+            implode(':', [
+                getenv('DOCTRINE_REPORT_HOST'),
+                getenv('DOCTRINE_REPORT_PORT'),
+                getenv('DOCTRINE_REPORT_DATABASE'),
+            ])
+                => $roleReport,
+        ];
+
+        return new Driver($driver, $roles, $isPgSQL);
     }
 }

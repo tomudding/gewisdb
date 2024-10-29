@@ -9,11 +9,17 @@ use Doctrine\DBAL\Driver\Connection as ConnectionInterface;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use SensitiveParameter;
 
+use function implode;
+
 class Driver extends AbstractDriverMiddleware
 {
+    /**
+     * @param array<non-empty-string,non-empty-string> $roles
+     */
     public function __construct(
         DriverInterface $driver,
-        private readonly string $role,
+        #[SensitiveParameter]
+        private readonly array $roles,
         private readonly bool $isPgSQL,
     ) {
         parent::__construct($driver);
@@ -28,8 +34,15 @@ class Driver extends AbstractDriverMiddleware
     ): ConnectionInterface {
         $connection = parent::connect($params);
 
-        if ($this->isPgSQL) {
-            $connection->exec('SET ROLE ' . $connection->quote($this->role));
+        if (
+            $this->isPgSQL
+            && isset($params['host'])
+            && isset($params['port'])
+            && isset($params['dbname'])
+        ) {
+            $role = $this->roles[implode(':', [$params['host'], $params['port'], $params['dbname']])];
+
+            $connection->exec('SET ROLE ' . $connection->quote($role));
         }
 
         return $connection;
